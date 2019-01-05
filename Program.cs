@@ -7,17 +7,49 @@ namespace MazeGen
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-
             var generator = new MazeGenerator();
-            var maze = generator.GenerateMaze(10,10);
+            var maze = generator.GenerateMaze(30,8);
+            
+            for (int y = 0; y < maze.Height*3; y++)
+            {
+                for (int x = 0; x < maze.Width*3; x+=3)
+                {
+                    int realY = y / 3;
+                    int realX = x / 3;
+                    int line = y % 3;
 
-            for(int y=0; y < maze.Height; y++) {
-                for(int x=0; x < maze.Width; x++) {
-                    PrintTile(maze.Tiles[y,x]);
+                    switch (line)
+                    {
+                        case 0:
+                            Console.Write("▓");
+                            if (maze.Tiles[realY, realX].HasAnyWall(TileWall.North)) { Console.Write("▓"); } else { Console.Write(" "); }
+                            Console.Write("▓");
+                            break;
+                        case 1:
+                            if (maze.Tiles[realY, realX].HasAnyWall(TileWall.West)) { Console.Write("▓"); } else { Console.Write(" "); }
+                            Console.Write(" ");
+                            if (maze.Tiles[realY, realX].HasAnyWall(TileWall.East)) { Console.Write("▓"); } else { Console.Write(" "); }
+                            break;
+                        case 2:
+                            Console.Write("▓");
+                            if (maze.Tiles[realY, realX].HasAnyWall(TileWall.South)) { Console.Write("▓"); } else { Console.Write(" "); }
+                            Console.Write("▓");
+                            break;
+                    }
+                    
                 }
-                Console.WriteLine(String.Empty);
+                Console.WriteLine();
             }
+
+
+            //for(int y=0; y < maze.Height; y++) {
+            //    for(int x=0; x < maze.Width; x++) {
+            //        PrintTile(maze.Tiles[y,x]);
+            //    }
+            //    Console.WriteLine(String.Empty);
+            //}
+
+            Console.ReadLine();
         }
 
         private static readonly Dictionary<TileWall, string> WallDisplay = new Dictionary<TileWall, string>{

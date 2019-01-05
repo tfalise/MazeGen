@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace MazeGen
@@ -31,30 +32,52 @@ namespace MazeGen
             var currentTile = maze.Tiles[y,x];
             currentTile.IsVisited = true;
 
-            if(y > 0 && !maze.Tiles[y-1, x].IsVisited && currentTile.HasWall(TileWall.North)) {
-                currentTile.Walls -= TileWall.North;
-                maze.Tiles[y-1, x].Walls -= TileWall.South;
+            var shuffledNeighbours = GetAvailableNeighbours(maze, currentTile).OrderBy(t => Guid.NewGuid());
 
-                Dig(maze, x, y-1);
+            foreach(var neighbour in shuffledNeighbours)
+            {
+                if (neighbour.IsVisited) continue;
+                if(neighbour.X == currentTile.X)
+                {
+                    if(neighbour.Y > currentTile.Y)
+                    {
+                        currentTile.Walls -= TileWall.South;
+                        neighbour.Walls -= TileWall.North;
+                        Dig(maze, x, y + 1);
+                    }
+                    else
+                    {
+                        currentTile.Walls -= TileWall.North;
+                        neighbour.Walls -= TileWall.South;
+                        Dig(maze, x, y - 1);
+                    }
+                }
+                else
+                {
+                    if (neighbour.X > currentTile.X)
+                    {
+                        currentTile.Walls -= TileWall.East;
+                        neighbour.Walls -= TileWall.West;
+                        Dig(maze, x + 1, y);
+                    }
+                    else
+                    {
+                        currentTile.Walls -= TileWall.West;
+                        neighbour.Walls -= TileWall.East;
+                        Dig(maze, x - 1, y);
+                    }
+                }
             }
-            if(y < maze.Height - 1 && !maze.Tiles[y+1, x].IsVisited && currentTile.HasWall(TileWall.South)) {
-                currentTile.Walls -= TileWall.South;
-                maze.Tiles[y+1, x].Walls -= TileWall.North;
+        }
 
-                Dig(maze, x, y+1);
-            }
-            if(x > 0 && !maze.Tiles[y, x-1].IsVisited && currentTile.HasWall(TileWall.West)) {
-                currentTile.Walls -= TileWall.West;
-                maze.Tiles[y, x-1].Walls -= TileWall.East;
-
-                Dig(maze, x-1, y);
-            }
-            if(x < maze.Width - 1 && !maze.Tiles[y, x+1].IsVisited && currentTile.HasWall(TileWall.East)) {
-                currentTile.Walls -= TileWall.East;
-                maze.Tiles[y, x+1].Walls -= TileWall.West;
-
-                Dig(maze, x+1, y);
-            }
+        private IList<Tile> GetAvailableNeighbours(Maze maze, Tile tile)
+        {
+            var neighbours = new List<Tile>();
+            if (tile.X > 0 && !maze.Tiles[tile.Y, tile.X - 1].IsVisited) neighbours.Add(maze.Tiles[tile.Y, tile.X - 1]);
+            if (tile.X < maze.Width - 1 && !maze.Tiles[tile.Y, tile.X + 1].IsVisited) neighbours.Add(maze.Tiles[tile.Y, tile.X + 1]);
+            if (tile.Y > 0 && !maze.Tiles[tile.Y - 1, tile.X].IsVisited) neighbours.Add(maze.Tiles[tile.Y - 1, tile.X]);
+            if (tile.Y < maze.Height - 1 && !maze.Tiles[tile.Y + 1, tile.X].IsVisited) neighbours.Add(maze.Tiles[tile.Y + 1, tile.X]);
+            return neighbours;
         }
     }
 
